@@ -26,3 +26,9 @@ export const reducer = (state: MessageReducerState = MESSAGE_REDUCER_DEFAULT_STA
             return state;
     }
 };
+
+export const addMessage: (message: Message) =>  AddMessage = (message) => ({
+    type: ADD_MESSAGE,
+    message
+});
+
