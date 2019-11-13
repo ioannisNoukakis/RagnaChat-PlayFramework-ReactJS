@@ -16,7 +16,7 @@ import scala.language.implicitConversions
 
 @Singleton
 class MongoDB {
-  private val mongoClient = MongoClient("mongodb://root:example@localhost:27018")
+  private val mongoClient = MongoClient("mongodb://localhost:27018")
   private val codecRegistry = fromRegistries(
     fromProviders(classOf[User]),
     fromProviders(classOf[UserToken]),

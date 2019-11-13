@@ -10,11 +10,10 @@ import service.mongodb.MongoDB
 
 
 class MessagePersistenceService @Inject()(mongoDB: MongoDB) extends BasePersistenceService[Message](mongoDB) {
-  def watchMessage(): Source[Message, NotUsed] = super.watch(Seq(
-    sort(orderBy(ascending("date")))
-  ))
+  def watchMessage(): Source[Message, NotUsed] = super.watch()
 
-  def pageMessage(skip: Int, limit: Int) = super.pageAggregate(Seq(
-    sort(orderBy(ascending("date")))
+  def pageMessage(skip: Int, limit: Int): Source[Message, NotUsed] = super.pageAggregate(Seq(
+    sort(orderBy(descending("date")))
   ), skip, limit)
+    .flatMapConcat(elements => Source(elements.reverse.toList))
 }

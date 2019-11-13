@@ -25,9 +25,9 @@ abstract class BasePersistenceService[T: ClassTag](mongoDB: MongoDB, tableName: 
 
   def page(skip: Int, limit: Int)(implicit ec: ExecutionContext): Future[Seq[T]] = _find(skip = Some(skip), limit = Some(limit))
 
-  def pageAggregate(aggregatePipeline: Seq[Bson], s: Int, l: Int): Future[Seq[T]] = collection
+  def pageAggregate(aggregatePipeline: Seq[Bson], s: Int, l: Int): Source[Seq[T], NotUsed] = Source.fromFuture(collection
     .aggregate(aggregatePipeline ++ Seq(skip(s), limit(l)))
-    .toFuture()
+    .toFuture())
 
   def add(value: T)(implicit ec: ExecutionContext): Future[Completed] = collection
     .insertOne(value)

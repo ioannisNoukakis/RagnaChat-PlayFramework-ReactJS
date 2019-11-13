@@ -9,7 +9,6 @@ POST        /user                controllers.UserController.addUser
 GET         /user/:id            controllers.UserController.findUser(id)
 POST        /auth                controllers.UserController.auth
 GET         /check               controllers.UserController.check
-GET         /wsActor             controllers.ChatController.wsActor
 GET         /ws                  controllers.ChatController.ws
 
 # Map static resources from the /public folder to the /assets URL path
