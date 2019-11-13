@@ -1,6 +1,7 @@
 import React from 'react';
 import {useSelector} from "../redux/store";
 import {LoginOrCreateForm} from "./LoginOrCreateForm";
+import {ChatBox} from "./ChatBox";
 
 const App: React.FC = () => {
   const id = useSelector(state => state.auth.id);
@@ -8,11 +9,7 @@ const App: React.FC = () => {
   if (id === null) {
     return <LoginOrCreateForm/>
   }
-  return (
-    <div>
-      Yup.
-    </div>
-  );
+  return <ChatBox/>
 };
 
 export default App;

@@ -3,9 +3,9 @@ import {WS_ENDPOINT} from "./urls";
 
 export class QimWebsocket {
     private readonly socket: WebSocket;
-    private readonly messageHandler: (msg: Message) => void;
+    private readonly messageHandler: (msg: string) => void;
 
-    constructor(messageHandler: (msg: Message) => void) {
+    constructor(messageHandler: (msg: string) => void) {
         this.socket = new WebSocket(WS_ENDPOINT);
         this.socket.onopen = this.onOpen;
         this.socket.onclose = this.onClose;

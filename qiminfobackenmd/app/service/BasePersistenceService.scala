@@ -5,6 +5,7 @@ import akka.stream.scaladsl.Source
 import javax.inject.Singleton
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.Aggregates._
 import org.mongodb.scala.{Completed, MongoCollection}
 import service.mongodb.MongoDB
 
@@ -23,6 +24,10 @@ abstract class BasePersistenceService[T: ClassTag](mongoDB: MongoDB, tableName: 
     .map(_.headOption)
 
   def page(skip: Int, limit: Int)(implicit ec: ExecutionContext): Future[Seq[T]] = _find(skip = Some(skip), limit = Some(limit))
+
+  def pageAggregate(aggregatePipeline: Seq[Bson], s: Int, l: Int): Future[Seq[T]] = collection
+    .aggregate(aggregatePipeline ++ Seq(skip(s), limit(l)))
+    .toFuture()
 
   def add(value: T)(implicit ec: ExecutionContext): Future[Completed] = collection
     .insertOne(value)

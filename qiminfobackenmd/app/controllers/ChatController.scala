@@ -30,7 +30,7 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
   private val room = system.actorOf(RoomActor.props(messagePersistenceService))
 
   def wsActor: WebSocket = WebSocket.acceptOrResult[MessageCreate, Message] { request =>
-    UserAction.userFromJWTOrResult(request.headers.get("QimJWT").getOrElse(""), config, userPersistence)
+    UserAction.userFromJWTOrResult(request.cookies.get("QimJWT").map(_.value).getOrElse(""), config, userPersistence)
       .recover {
         case e => Right(User(UUID.randomUUID().toString, "anonymous", "-", new Date()))
       }
@@ -42,7 +42,7 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
   }
 
   def ws: WebSocket = WebSocket.acceptOrResult[MessageCreate, Message] { request =>
-    UserAction.userFromJWTOrResult(request.headers.get("QimJWT").getOrElse(""), config, userPersistence)
+    UserAction.userFromJWTOrResult(request.cookies.get("QimJWT").map(_.value).getOrElse(""), config, userPersistence)
       .recover {
         case e => Right(User(UUID.randomUUID().toString, "anonymous", "-", new Date()))
       }

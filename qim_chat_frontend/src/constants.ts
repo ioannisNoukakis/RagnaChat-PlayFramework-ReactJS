@@ -1,0 +1,1 @@
+export const MAX_MSG_IN_BROWSER_MEMORY = 100;
