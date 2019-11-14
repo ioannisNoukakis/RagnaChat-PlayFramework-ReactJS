@@ -6,3 +6,4 @@ rs.initiate()
 rs.add('mongo2')
 rs.add('mongo3')
 rs.printSlaveReplicationInfo()
+exit

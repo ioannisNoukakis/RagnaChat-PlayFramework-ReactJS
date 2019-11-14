@@ -1,4 +1,5 @@
-import {Grid} from "@material-ui/core";
+import {createStyles, Grid, Theme} from "@material-ui/core";
+import makeStyles from "@material-ui/core/styles/makeStyles";
 import TextField from "@material-ui/core/TextField";
 import * as React from "react";
 import {useState} from "react";
@@ -7,7 +8,19 @@ import {addMessage} from "../redux/messageReducer";
 import {useSelector} from "../redux/store";
 import {useQimWebsocket} from "./useQimWebsocket";
 
+const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        container: {
+            height: "100vh",
+        },
+        chatContainer: {
+            height: "calc(100vh - 72px)",
+        }
+    }),
+);
+
 export const ChatBox: React.FC = () => {
+    const classes = useStyles();
     const [typedMessage, setTypedMessage] = useState("");
 
     const id = useSelector(state => state.auth.id);
@@ -20,18 +33,20 @@ export const ChatBox: React.FC = () => {
         if (e.key !== "Enter") {
             return;
         }
-        sendMessage({content: typedMessage})
+        sendMessage({content: typedMessage});
         setTypedMessage("")
     };
 
     return (
-        <Grid container justify="center" direction="column">
-            {[...messages].reverse().map(msg => <div
-                style={id === msg.from.id ? {backgroundColor: "green"} : undefined}
-                key={msg.id}
-            >
-                [{msg.from.username}] - {new Date(msg.date).toISOString()} - {msg.content}
-            </div>)}
+        <Grid container direction="column" className={classes.container}>
+            <Grid container direction="column"  className={classes.chatContainer}>
+                {[...messages].reverse().map(msg => <div
+                    style={id === msg.from.id ? {backgroundColor: "green"} : undefined}
+                    key={msg.id}
+                >
+                    [{msg.from.username}] - {new Date(msg.date).toISOString()} - {msg.content}
+                </div>)}
+            </Grid>
             <TextField
                 fullWidth
                 id="login-username-required"

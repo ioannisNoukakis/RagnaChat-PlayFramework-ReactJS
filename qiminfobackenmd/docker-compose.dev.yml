@@ -5,9 +5,6 @@ services:
     hostname: mongo1
     container_name: mongo1
     image: mongo:4.0.4
-    volumes:
-      - ./mongo/data1/db:/data/db
-      - ./mongo/data1/configdb:/data/configdb
     networks:
       - mongo-dev-net
     expose:
@@ -19,9 +16,6 @@ services:
     hostname: mongo2
     container_name: mongo2
     image: mongo:4.0.4
-    volumes:
-      - ./mongo/data2/db:/data/db
-      - ./mongo/data2/configdb:/data/configdb
     networks:
       - mongo-dev-net
     expose:
@@ -33,9 +27,6 @@ services:
     hostname: mongo3
     container_name: mongo3
     image: mongo:4.0.4
-    volumes:
-      - ./mongo/data3/db:/data/db
-      - ./mongo/data3/configdb:/data/configdb
     networks:
       - mongo-dev-net
     expose:
