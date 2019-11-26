@@ -1,9 +1,9 @@
 import {useCallback, useEffect, useRef} from "react";
-import {QimWebsocket} from "../api/QimWebsocket";
+import {RagnaWebsocket} from "../api/RagnaWebsocket";
 import {Message, MessageCreate} from "../api/model/Message";
 
-export const useQimWebsocket = (messageHandler: (msg: string) => void) => {
-    const QimWebsocketRef = useRef<QimWebsocket>(null);
+export const useRagnaWebsocket = (messageHandler: (msg: string) => void) => {
+    const QimWebsocketRef = useRef<RagnaWebsocket>(null);
 
     const sendMessage = useCallback((message: MessageCreate) => {
         QimWebsocketRef.current && QimWebsocketRef.current.send(message);
@@ -11,8 +11,8 @@ export const useQimWebsocket = (messageHandler: (msg: string) => void) => {
 
     useEffect(() => {
         // @ts-ignore
-        QimWebsocketRef.current = new QimWebsocket(messageHandler);
-        return QimWebsocketRef.current.close;
+        QimWebsocketRef.current = new RagnaWebsocket(messageHandler);
+        // return QimWebsocketRef.current ? QimWebsocketRef.current.close() : () => {}
     }, []);
 
     return [sendMessage];

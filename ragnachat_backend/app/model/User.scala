@@ -4,7 +4,7 @@ import java.util.Date
 
 import play.api.libs.json.{Json, Reads, Writes}
 
-case class User(id: String, username: String, password: String, created: Date) {
+case class User(id: String, username: String, password: String, created: Date, channels: Array[String]) {
   def toUserToken: UserToken = UserToken(id, username, created)
 }
 

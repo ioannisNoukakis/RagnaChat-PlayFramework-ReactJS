@@ -10,7 +10,7 @@ import {useDispatch} from "react-redux";
 import {auth, createUser} from "../api/action";
 import {UserAuth} from "../api/model/User";
 import {setAuthStatus} from "../redux/authReducer";
-import {ErrorMsg} from "./ErrorMsg";
+import {ErrorMsg} from "./dialog/ErrorMsg";
 import loginBackground from "./loginBackground.svg"
 
 const useStyles = makeStyles((theme: Theme) =>

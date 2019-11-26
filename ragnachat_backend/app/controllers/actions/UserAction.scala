@@ -9,6 +9,7 @@ import play.api.Configuration
 import play.api.libs.json._
 import play.api.mvc._
 import service.UserPersistenceService
+import utils.Constants
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -20,7 +21,7 @@ class UserAction @Inject()(override val parser: BodyParsers.Default, userPersist
   private implicit val clock: Clock = Clock.systemUTC
 
   override def refine[A](request: Request[A]): Future[Either[Result, AuthenticatedRequest[A]]] =
-    UserAction.userFromJWTOrResult(request.cookies.get("QimJWT").map(_.value).getOrElse(""), config, userPersistence)
+    UserAction.userFromJWTOrResult(request.cookies.get(Constants.JWT_COOKIE_NAME).map(_.value).getOrElse(""), config, userPersistence)
       .map(_.map(AuthenticatedRequest(_, request)))
       .recover {
         case e => e.printStackTrace(); Left(Results.Unauthorized(Json.obj("status" -> "KO", "message" -> "Something failed. In doubt, your request was denied.")))

@@ -13,6 +13,7 @@ import play.api.libs.json._
 import play.api.mvc.WebSocket.MessageFlowTransformer
 import play.api.mvc.{AbstractController, ControllerComponents, WebSocket}
 import service.{MessagePersistenceService, UserPersistenceService}
+import utils.Constants
 
 import scala.concurrent.ExecutionContext
 
@@ -21,21 +22,22 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
                               (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext)
   extends AbstractController(cc) {
 
-  implicit val messageFormatIn = Json.format[MessageCreate]
-  implicit val messageFormatOut = Json.format[Message]
-  implicit val messageFlowTransformer = MessageFlowTransformer.jsonMessageFlowTransformer[MessageCreate, Message]
+  implicit private val messageFormatIn: OFormat[MessageCreate] = Json.format[MessageCreate]
+  implicit private val messageFormatOut: OFormat[Message] = Json.format[Message]
+  implicit private val messageFlowTransformer: MessageFlowTransformer[MessageCreate, Message]
+    = MessageFlowTransformer.jsonMessageFlowTransformer[MessageCreate, Message]
 
   def ws: WebSocket = WebSocket.acceptOrResult[MessageCreate, Message] { request =>
     UserAction
-      .userFromJWTOrResult(request.cookies.get("QimJWT").map(_.value).getOrElse(""), config, userPersistence)
+      .userFromJWTOrResult(request.cookies.get(Constants.JWT_COOKIE_NAME).map(_.value).getOrElse(""), config, userPersistence)
       .recover {
         case _ => Right(User(UUID.randomUUID().toString, "anonymous", "-", new Date()))
       }
       .map(_.map { user =>
-        val source = messagePersistenceService.pageMessage(0, 50)
-          .concat(messagePersistenceService.watchMessage())
+        val source = messagePersistenceService.pageMessage(channel, 0, 50)
+          .concat(messagePersistenceService.watchMessage(channel))
         val sink = Flow[MessageCreate]
-          .map(mCreate => Message(UUID.randomUUID().toString, user.toUserToken, mCreate.content, new Date()))
+          .map(mCreate => Message(UUID.randomUUID().toString, mCreate.channel, user.toUserToken, mCreate.content, new Date()))
           .mapAsync(10)(messagePersistenceService.add(_))
           .toMat(Sink.queue())(Keep.left)
         Flow.fromSinkAndSource(sink, source)

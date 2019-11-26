@@ -13,6 +13,7 @@ import play.api.Configuration
 import play.api.libs.json.{JsError, JsObject, JsValue, Json}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents, Cookie}
 import service.UserPersistenceService
+import utils.Constants
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,7 +34,7 @@ class UserController @Inject()(userAction: UserAction, cc: ControllerComponents,
             if (usernameFree) {
               userPersistence
                 .add(user)
-                .map(_ => Ok(Json.obj("status" -> "ok", "id" -> user.id)).withCookies(Cookie("QimJWT", encodeToken(user))))
+                .map(_ => userAuth(user))
             } else {
               Future.successful(Conflict(Json.obj("status" -> "KO", "message" -> "Username already taken")))
             }
@@ -60,7 +61,7 @@ class UserController @Inject()(userAction: UserAction, cc: ControllerComponents,
         userPersistence.find("username", tmpU.username)
           .map(_.get)
           .map(user => if (user.password == tmpU.password.sha512.hex) {
-            Ok(Json.obj("status" -> "ok", "id" -> user.id)).withCookies(Cookie("QimJWT", encodeToken(user)))
+            userAuth(user);
           } else {
             Forbidden(Json.obj("cause" -> "Invalid password or username"))
           }).recover {
@@ -78,6 +79,8 @@ class UserController @Inject()(userAction: UserAction, cc: ControllerComponents,
   def check(): Action[AnyContent] = userAction { implicit request =>
     Ok(Json.obj("status" -> "ok", "id" -> request.user.id))
   }
+
+  private def userAuth(user: User) = Ok(Json.obj("status" -> "ok", "id" -> user.id)).withCookies(Cookie(Constants.JWT_COOKIE_NAME, encodeToken(user)))
 
   private def encodeToken(user: User) = JwtJson.encode(Json.toJson(user.toUserToken).as[JsObject], config.get[String]("jwt_secret"), JwtAlgorithm.HS512)
 }
