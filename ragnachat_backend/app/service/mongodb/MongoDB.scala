@@ -24,7 +24,7 @@ class MongoDB {
     DEFAULT_CODEC_REGISTRY
   )
 
-  val database: MongoDatabase = mongoClient.getDatabase("QimChat").withCodecRegistry(codecRegistry)
+  val database: MongoDatabase = mongoClient.getDatabase("RagnaChat").withCodecRegistry(codecRegistry)
 }
 
 object MongoDB {

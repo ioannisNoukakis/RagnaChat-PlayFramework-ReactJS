@@ -32,7 +32,6 @@ abstract class BasePersistenceService[T: ClassTag](mongoDB: MongoDB, tableName: 
   def add(value: T)(implicit ec: ExecutionContext): Future[Completed] = collection
     .insertOne(value)
     .toFuture()
-    .recoverWith { case e: Throwable => Future.failed(e) }
 
   def watch(): Source[T, NotUsed] = Source.fromPublisher(MongoDB.observableToPublisher(collection.watch()))
     .map(_.getFullDocument)

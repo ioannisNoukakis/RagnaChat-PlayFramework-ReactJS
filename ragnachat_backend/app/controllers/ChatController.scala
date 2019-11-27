@@ -31,14 +31,14 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
     UserAction
       .userFromJWTOrResult(request.cookies.get(Constants.JWT_COOKIE_NAME).map(_.value).getOrElse(""), config, userPersistence)
       .recover {
-        case _ => Right(User(UUID.randomUUID().toString, "anonymous", "-", new Date()))
+        case _ => Right(User(UUID.randomUUID().toString, "anonymous", "-", new Date(), List("main")))
       }
       .map(_.map { user =>
-        val source = messagePersistenceService.pageMessage(channel, 0, 50)
-          .concat(messagePersistenceService.watchMessage(channel))
+        val source = messagePersistenceService.pageMessage(user.channels, 0, 50)
+          .concat(messagePersistenceService.watchMessage(user.channels))
         val sink = Flow[MessageCreate]
           .map(mCreate => Message(UUID.randomUUID().toString, mCreate.channel, user.toUserToken, mCreate.content, new Date()))
-          .mapAsync(10)(messagePersistenceService.add(_))
+          .mapAsync(1)(messagePersistenceService.add(_))
           .toMat(Sink.queue())(Keep.left)
         Flow.fromSinkAndSource(sink, source)
       })

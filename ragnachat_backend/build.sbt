@@ -1,4 +1,4 @@
-name := "QimChatServer"
+name := "RagnaChatServer"
 
 version := "1.0"
 

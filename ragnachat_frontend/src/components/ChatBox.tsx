@@ -1,21 +1,34 @@
 import {createStyles, Grid, Theme} from "@material-ui/core";
+import Paper from "@material-ui/core/Paper";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import TextField from "@material-ui/core/TextField";
 import * as React from "react";
 import {useState} from "react";
 import {useDispatch} from "react-redux";
-import {addMessage, setChannel} from "../redux/messageReducer";
+import {addMessage} from "../redux/messageReducer";
 import {useSelector} from "../redux/store";
 import {useRagnaWebsocket} from "./useRagnaWebsocket";
-import {DialogSelect} from "./dialog/DialogSelect";
+import loginBackground from "./loginBackground.svg"
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         container: {
             height: "100vh",
+            padding: theme.spacing(1),
+            backgroundImage: `url(${loginBackground})`,
         },
         chatContainer: {
-            height: "calc(100vh - 72px)",
+            padding: theme.spacing(1),
+            height: `calc(100vh - ${theme.spacing(10)}px)`,
+            overflow: "scroll",
+        },
+        messageTyperContainer: {
+            position: "absolute",
+            bottom: 0,
+        },
+        messageTyper: {
+            margin: theme.spacing(1),
+            width: `calc(100vw - ${theme.spacing(4)}px)`,
         }
     }),
 );
@@ -26,36 +39,22 @@ export const ChatBox: React.FC = () => {
 
     const id = useSelector(state => state.auth.id);
     const messages = useSelector(state => state.message.messages);
-    const channel = useSelector(state => state.message.channel);
     const dispatch = useDispatch();
-
-    const onChannelSelect = (channel: string) => {
-        console.log("AH", channel);
-        dispatch(setChannel(channel));
-    };
 
     const [sendMessage] = useRagnaWebsocket((msg) => dispatch(addMessage(JSON.parse(msg))));
 
     const handleOnEnterPressed = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (e.key !== "Enter" || channel === null) {
+        if (e.key !== "Enter") {
             return;
         }
-        sendMessage({channel, content: typedMessage});
+        sendMessage({channel: "main", content: typedMessage});
         setTypedMessage("")
     };
 
     return (
         <>
-            <DialogSelect
-                open={channel === null || channel === ""}
-                title="Select your channel"
-                txt="It can have any name (just not blank)."
-                label="Channel name"
-                acceptTxt="Select"
-                onAccept={onChannelSelect}
-            />
-            <Grid container direction="column" className={classes.container}>
-                <Grid container direction="column" className={classes.chatContainer}>
+            <Grid container direction="column" className={classes.container} justify="space-between">
+                <Grid container direction="column" className={classes.chatContainer} wrap="nowrap">
                     {[...messages].reverse().map(msg => <div
                         style={id === msg.from.id ? {backgroundColor: "green"} : undefined}
                         key={msg.id}
@@ -63,15 +62,18 @@ export const ChatBox: React.FC = () => {
                         [{msg.from.username}] - {new Date(msg.date).toISOString()} - {msg.content}
                     </div>)}
                 </Grid>
-                <TextField
-                    fullWidth
-                    id="login-username-required"
-                    label="Send text"
-                    margin="normal"
-                    value={typedMessage}
-                    onChange={(e) => setTypedMessage(e.target.value)}
-                    onKeyPress={handleOnEnterPressed}
-                />
+                <Paper className={classes.messageTyperContainer}>
+                    <TextField
+                        id="login-username-required"
+                        label="Send text"
+                        margin="none"
+                        variant="outlined"
+                        value={typedMessage}
+                        onChange={(e) => setTypedMessage(e.target.value)}
+                        onKeyPress={handleOnEnterPressed}
+                        className={classes.messageTyper}
+                    />
+                </Paper>
             </Grid>
         </>
     )

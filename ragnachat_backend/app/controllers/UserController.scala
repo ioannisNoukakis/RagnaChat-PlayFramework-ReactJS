@@ -25,7 +25,7 @@ class UserController @Inject()(userAction: UserAction, cc: ControllerComponents,
     request.body.validate[UserAuth].fold(
       errors => Future.successful(BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toJson(errors)))),
       userCreate => {
-        val user = User(UUID.randomUUID().toString, userCreate.username, userCreate.password.sha512.hex, new Date())
+        val user = User(UUID.randomUUID().toString, userCreate.username, userCreate.password.sha512.hex, new Date(), List("main"))
 
         userPersistence
           .find("username", userCreate.username)
@@ -77,7 +77,7 @@ class UserController @Inject()(userAction: UserAction, cc: ControllerComponents,
    * This require an authenticated user. See UserAction for more details.
    */
   def check(): Action[AnyContent] = userAction { implicit request =>
-    Ok(Json.obj("status" -> "ok", "id" -> request.user.id))
+    Ok(Json.obj("status" -> "ok", "user" -> request.user.toUserToken))
   }
 
   private def userAuth(user: User) = Ok(Json.obj("status" -> "ok", "id" -> user.id)).withCookies(Cookie(Constants.JWT_COOKIE_NAME, encodeToken(user)))
