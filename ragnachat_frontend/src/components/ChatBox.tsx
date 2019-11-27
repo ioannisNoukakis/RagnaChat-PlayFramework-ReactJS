@@ -9,6 +9,20 @@ import {addMessage} from "../redux/messageReducer";
 import {useSelector} from "../redux/store";
 import {useRagnaWebsocket} from "./useRagnaWebsocket";
 import loginBackground from "./loginBackground.svg"
+import Typography from "@material-ui/core/Typography";
+import moment from "moment";
+
+const speechBubbleBase = (theme: Theme) => ({
+    border: "1px solid #a7a7a7",
+    borderRadius: "4px",
+    boxShadow: "4px 4px 0 rgba(0, 0, 0, 0.2)",
+    margin: `0px 0px ${theme.spacing(1)}px 0px`,
+    width: "300px",
+    padding: theme.spacing(1),
+    position: "relative" as any,
+    display: "flex" as any,
+    flexDirection: "column" as any,
+});
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -20,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) =>
         chatContainer: {
             padding: theme.spacing(1),
             height: `calc(100vh - ${theme.spacing(10)}px)`,
-            overflow: "scroll",
+            overflow: "auto",
         },
         messageTyperContainer: {
             position: "absolute",
@@ -29,7 +43,16 @@ const useStyles = makeStyles((theme: Theme) =>
         messageTyper: {
             margin: theme.spacing(1),
             width: `calc(100vw - ${theme.spacing(4)}px)`,
-        }
+        },
+        speechBubbleLeft: {
+            ...speechBubbleBase(theme),
+            background: theme.palette.secondary.light,
+        },
+        speechBubbleRight: {
+            ...speechBubbleBase(theme),
+            alignSelf: "flex-end",
+            background: theme.palette.secondary.dark,
+        },
     }),
 );
 
@@ -51,15 +74,20 @@ export const ChatBox: React.FC = () => {
         setTypedMessage("")
     };
 
+    /*style={id === msg.from.id ? {backgroundColor: "green"} : undefined}*/
     return (
         <>
             <Grid container direction="column" className={classes.container} justify="space-between">
                 <Grid container direction="column" className={classes.chatContainer} wrap="nowrap">
                     {[...messages].reverse().map(msg => <div
-                        style={id === msg.from.id ? {backgroundColor: "green"} : undefined}
                         key={msg.id}
+                        className={id === msg.from.id ? classes.speechBubbleRight : classes.speechBubbleLeft}
                     >
-                        [{msg.from.username}] - {new Date(msg.date).toISOString()} - {msg.content}
+                        <Typography variant="body1">{msg.from.username}</Typography>
+                        <Typography variant="body2">{msg.content}</Typography>
+                        <Typography variant="caption" style={{alignSelf: "flex-end"}}>
+                            {moment(msg.date).fromNow()}
+                        </Typography>
                     </div>)}
                 </Grid>
                 <Paper className={classes.messageTyperContainer}>

@@ -77,7 +77,7 @@ class UserController @Inject()(userAction: UserAction, cc: ControllerComponents,
    * This require an authenticated user. See UserAction for more details.
    */
   def check(): Action[AnyContent] = userAction { implicit request =>
-    Ok(Json.obj("status" -> "ok", "user" -> request.user.toUserToken))
+    Ok(Json.obj("status" -> "ok", "id" -> request.user.id))
   }
 
   private def userAuth(user: User) = Ok(Json.obj("status" -> "ok", "id" -> user.id)).withCookies(Cookie(Constants.JWT_COOKIE_NAME, encodeToken(user)))
