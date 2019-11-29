@@ -25,7 +25,7 @@ class UserController @Inject()(userAction: UserAction, cc: ControllerComponents,
     request.body.validate[UserAuth].fold(
       errors => Future.successful(BadRequest(Json.obj("status" -> "KO", "message" -> JsError.toJson(errors)))),
       userCreate => {
-        val user = User(UUID.randomUUID().toString, userCreate.username, userCreate.password.sha512.hex, new Date(), List("main"))
+        val user = User(UUID.randomUUID().toString, userCreate.username, userCreate.password.sha512.hex, new Date(), List("main", "System"))
 
         userPersistence
           .find("username", userCreate.username)
