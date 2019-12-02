@@ -2,13 +2,13 @@ package controllers
 
 import java.util.{Date, UUID}
 
-import akka.NotUsed
+import scala.concurrent.duration._
 import akka.actor.ActorSystem
 import akka.stream.{FlowShape, Materializer}
 import akka.stream.scaladsl._
 import controllers.actions.UserAction
 import javax.inject.{Inject, Singleton}
-import model.{GetLast50Messages, InternalErrorMsg, Message, MessageCMD, MessageCommand, MessageCreate, User, UserToken}
+import model.{GetLastXMessages, InternalErrorMsg, Message, MessageCMD, MessageCommand, MessageCreate, User, UserToken}
 import play.api.Configuration
 import play.api.libs.json._
 import play.api.mvc.WebSocket.MessageFlowTransformer
@@ -23,7 +23,6 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
                               (implicit system: ActorSystem, mat: Materializer, ec: ExecutionContext)
   extends AbstractController(cc) {
 
-  implicit private val messageFormatIn: OFormat[JsValue] = Json.format[JsValue]
   implicit private val messageFormatOut: OFormat[Message] = Json.format[Message]
   implicit private val messageFlowTransformer: MessageFlowTransformer[JsValue, Message]
   = MessageFlowTransformer.jsonMessageFlowTransformer[JsValue, Message]
@@ -33,19 +32,17 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
 
     // message transformer
     val transformer = Flow[JsValue]
-      .map(v => (v \ "cmd").asOpt
-        .map {
+      .map(v => MessageCommand.valueOf((v \ "cmd").as[String]) match {
           case MessageCommand.CREATE_MSG => v.as[MessageCreate]
-          case MessageCommand.LAST_50_MSG => v.as[GetLast50Messages]
+          case MessageCommand.LAST_X_MSG => v.as[GetLastXMessages]
           case _ => InternalErrorMsg(s"Cannot parse message: ${(v \ "cmd").get}", "System")
         }
-        .getOrElse(InternalErrorMsg("Missing required cmd attribute.", "System"))
       )
 
     // prepare graph elements
-    val input = b.add(Flow[JsValue])
+    val throttle = b.add(Flow[JsValue].throttle(5, 1.second))
     val broadcast = b.add(Broadcast[MessageCMD](3))
-    val merge = b.add(Merge[Message](4))
+    val merge = b.add(Merge[Message](5))
 
     // event processors
     val messageCreate = Flow[MessageCMD]
@@ -55,8 +52,8 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
       .mapAsync[Message](5)(msg => messagePersistenceService.add(msg).map(_ => msg))
 
     val getLast50Messages = Flow[MessageCMD]
-      .filter(_.cmd == MessageCommand.LAST_50_MSG)
-      .map(_.asInstanceOf[GetLast50Messages])
+      .filter(_.cmd == MessageCommand.LAST_X_MSG)
+      .map(_.asInstanceOf[GetLastXMessages])
       .flatMapConcat(_ => messagePersistenceService.pageMessage(user.channels, 0, 50))
 
     val processErrorMessages = Flow[MessageCMD]
@@ -64,14 +61,18 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
       .map(_.asInstanceOf[InternalErrorMsg])
       .map(e => Message("SYSTEM", e.channel, UserToken("SYSTEM", "System", new Date()), e.msg, new Date()))
 
+    val watchMsg = messagePersistenceService.watchMessage(user.channels)
+        .filter(_.from.id != user.id)
+
     // connect the graph
-    input ~> transformer ~> broadcast ~> messageCreate        ~> merge
-                            broadcast ~> getLast50Messages    ~> merge
-                            broadcast ~> processErrorMessages ~> merge
-    messagePersistenceService.watchMessage(user.channels)     ~> merge
+    throttle ~> transformer ~> broadcast ~> messageCreate                                              ~> merge
+                               broadcast ~> getLast50Messages                                          ~> merge
+                               broadcast ~> processErrorMessages                                       ~> merge
+    watchMsg                                                                                           ~> merge
+    Source.single(Message("RDY", "System", UserToken("SYSTEM", "System", new Date()), "", new Date())) ~> merge
 
     // expose ports
-    FlowShape(input.in, merge.out)
+    FlowShape(throttle.in, merge.out)
   })
 
   def ws: WebSocket = WebSocket.acceptOrResult[JsValue, Message] { request =>
