@@ -1,4 +1,4 @@
-import {Message, MessageCreate} from "./model/Message";
+import {Message, MessageCMD, MessageCreate} from "./model/Message";
 import {WS_ENDPOINT} from "./urls";
 
 export class RagnaWebsocket {
@@ -10,7 +10,7 @@ export class RagnaWebsocket {
     /**
      * Queue of unsent messages.
      */
-    private queue: MessageCreate[] = [];
+    private queue: MessageCMD[] = [];
 
     /**
      * If true, the client is trying to reconnect to the server. After MAX_NUMBER_OF_RETRIES it gives up.
@@ -124,7 +124,7 @@ export class RagnaWebsocket {
      * @param {Message} msg - The message to be send.
      * @param {boolean} transient - if the message should be dropped and not queued.
      */
-    public sendMessage(msg: MessageCreate, transient: boolean = false) {
+    public sendMessage(msg: MessageCMD, transient: boolean = false) {
         if (this.ws && this.ws.readyState !== this.ws.OPEN) {
             if (!this.reconnecting) {
                 this.reconnecting = true;

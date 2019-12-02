@@ -45,23 +45,18 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
     // prepare graph elements
     val input = b.add(Flow[JsValue])
     val broadcast = b.add(Broadcast[MessageCMD](3))
-    val merge = b.add(Merge[Message](3))
-
-    // filters
-    val onlyCreateMsg = Flow[MessageCMD]
-      .filter(_.cmd == MessageCommand.CREATE_MSG)
-      .map(_.asInstanceOf[MessageCreate])
-
-    val onlyGetLast50Messages = Flow[MessageCMD]
-      .filter(_.cmd == MessageCommand.LAST_50_MSG)
-      .map(_.asInstanceOf[GetLast50Messages])
+    val merge = b.add(Merge[Message](4))
 
     // event processors
-    val messageCreate = Flow[MessageCreate]
+    val messageCreate = Flow[MessageCMD]
+      .filter(_.cmd == MessageCommand.CREATE_MSG)
+      .map(_.asInstanceOf[MessageCreate])
       .map(mCreate => Message(UUID.randomUUID().toString, mCreate.channel, user.toUserToken, mCreate.content, new Date()))
       .mapAsync[Message](5)(msg => messagePersistenceService.add(msg).map(_ => msg))
 
-    val getLast50Messages = Flow[GetLast50Messages]
+    val getLast50Messages = Flow[MessageCMD]
+      .filter(_.cmd == MessageCommand.LAST_50_MSG)
+      .map(_.asInstanceOf[GetLast50Messages])
       .flatMapConcat(_ => messagePersistenceService.pageMessage(user.channels, 0, 50))
 
     val processErrorMessages = Flow[MessageCMD]
@@ -70,9 +65,10 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
       .map(e => Message("SYSTEM", e.channel, UserToken("SYSTEM", "System", new Date()), e.msg, new Date()))
 
     // connect the graph
-    input ~> transformer ~> broadcast ~> onlyCreateMsg ~> messageCreate ~> merge
-    broadcast ~> onlyGetLast50Messages ~> getLast50Messages ~> merge
-    broadcast ~> processErrorMessages ~> merge
+    input ~> transformer ~> broadcast ~> messageCreate        ~> merge
+                            broadcast ~> getLast50Messages    ~> merge
+                            broadcast ~> processErrorMessages ~> merge
+    messagePersistenceService.watchMessage(user.channels)     ~> merge
 
     // expose ports
     FlowShape(input.in, merge.out)
@@ -84,11 +80,7 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
       .recover {
         case _ => Right(User(UUID.randomUUID().toString, "anonymous", "-", new Date(), List("main", "System")))
       }
-      .map(_.map { user =>
-        val source = messagePersistenceService.watchMessage(user.channels)
-        val sink = Flow[JsValue]
-        sink.via(flowGraph(user))
-      })
+      .map(_.map(user => flowGraph(user)))
   }
 
 }

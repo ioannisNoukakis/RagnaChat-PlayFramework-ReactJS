@@ -70,7 +70,7 @@ export const ChatBox: React.FC = () => {
         if (e.key !== "Enter") {
             return;
         }
-        sendMessage({channel: "main", content: typedMessage});
+        sendMessage({cmd: "CREATE_MSG", channel: "main", content: typedMessage});
         setTypedMessage("")
     };
 
