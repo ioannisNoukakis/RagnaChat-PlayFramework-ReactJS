@@ -7,7 +7,8 @@ export interface MessageCreate {
 }
 
 export interface Last50Messages {
-    cmd: "LAST_50_MSG";
+    cmd: "LAST_X_MSG";
+    nMessages: number;
 }
 
 export type MessageCMD = Last50Messages | MessageCreate;

@@ -1,8 +1,8 @@
 import {useCallback, useEffect, useRef} from "react";
 import {RagnaWebsocket} from "../api/RagnaWebsocket";
-import {MessageCreate} from "../api/model/Message";
+import {Message, MessageCreate} from "../api/model/Message";
 
-export const useRagnaWebsocket = (messageHandler: (msg: string) => void) => {
+export const useRagnaWebsocket = (messageHandler: (msg: Message) => void) => {
     const ragnachatWebSocket = useRef<RagnaWebsocket>(null);
 
     const sendMessage = useCallback((message: MessageCreate) => {
@@ -11,9 +11,9 @@ export const useRagnaWebsocket = (messageHandler: (msg: string) => void) => {
 
     useEffect(() => {
         // @ts-ignore
-        ragnachatWebSocket.current = new RagnaWebsocket(messageHandler);
-        ragnachatWebSocket.current!.sendMessage({cmd: "LAST_50_MSG"})
-        // return QimWebsocketRef.current ? QimWebsocketRef.current.close() : () => {}
+        ragnachatWebSocket.current = new RagnaWebsocket(5000, messageHandler);
+        ragnachatWebSocket.current!.sendMessage({cmd: "LAST_X_MSG", nMessages: 50})
+        // return RagnaWebsocket.current ? RagnaWebsocket.current.close() : () => {}
     }, []);
 
     return [sendMessage];

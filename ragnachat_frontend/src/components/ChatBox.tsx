@@ -64,7 +64,9 @@ export const ChatBox: React.FC = () => {
     const messages = useSelector(state => state.message.messages);
     const dispatch = useDispatch();
 
-    const [sendMessage] = useRagnaWebsocket((msg) => dispatch(addMessage(JSON.parse(msg))));
+    const [sendMessage] = useRagnaWebsocket((msg) => {
+        dispatch(addMessage(msg))
+    });
 
     const handleOnEnterPressed = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key !== "Enter") {
@@ -74,7 +76,6 @@ export const ChatBox: React.FC = () => {
         setTypedMessage("")
     };
 
-    /*style={id === msg.from.id ? {backgroundColor: "green"} : undefined}*/
     return (
         <>
             <Grid container direction="column" className={classes.container} justify="space-between">
