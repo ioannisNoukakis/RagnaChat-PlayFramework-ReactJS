@@ -15,10 +15,10 @@ object MessageCreate {
   implicit val messageCreateReads: Reads[MessageCreate] = Json.reads[MessageCreate]
 }
 
-case class GetLast50Messages() extends MessageCMD(MessageCommand.LAST_50_MSG)
+case class GetLastXMessages(nMessages: Int) extends MessageCMD(MessageCommand.LAST_X_MSG)
 
-object GetLast50Messages {
-  implicit val getLast50MessagesReads: Reads[GetLast50Messages] = Json.reads[GetLast50Messages]
+object GetLastXMessages {
+  implicit val getLast50MessagesReads: Reads[GetLastXMessages] = Json.reads[GetLastXMessages]
 }
 
 case class InternalErrorMsg(msg: String, channel: String) extends MessageCMD(MessageCommand.INTERNAL_ERROR_MSG)

@@ -1,5 +1,7 @@
-import {Message, MessageCreate} from "./model/Message";
+import {Message, MessageCMD, MessageCreate} from "./model/Message";
 import {WS_ENDPOINT} from "./urls";
+
+const noop = () => {};
 
 export class RagnaWebsocket {
     /**
@@ -10,7 +12,7 @@ export class RagnaWebsocket {
     /**
      * Queue of unsent messages.
      */
-    private queue: MessageCreate[] = [];
+    private queue: MessageCMD[] = [];
 
     /**
      * If true, the client is trying to reconnect to the server. After MAX_NUMBER_OF_RETRIES it gives up.
@@ -39,20 +41,21 @@ export class RagnaWebsocket {
 
     constructor(maxBackOffValue: number,
                 evtOnMessage: (msg: Message) => void,
-                evtOnConnected: (evt: Event) => void,
-                evtOnClosed: (evt: Event) => void,
-                evtOnError: (evt: Event) => void) {
+                evtOnConnected?: (evt: Event) => void,
+                evtOnClosed?: (evt: Event) => void,
+                evtOnError?: (evt: Event) => void) {
         this.maxBackOffValue = maxBackOffValue;
         this.evtOnMessage = evtOnMessage;
-        this.evtOnConnected = evtOnConnected;
-        this.evtOnClosed = evtOnClosed;
-        this.evtOnError = evtOnError;
+        this.evtOnConnected = evtOnConnected || noop;
+        this.evtOnClosed = evtOnClosed || noop;
+        this.evtOnError = evtOnError || noop;
     }
 
     /**
      * Closes the connection with the server. Any messages unsent will be discarded.
      */
     close() {
+        console.log("MANUAL CLOSE");
         if (this.ws && !this.ws.CLOSING && !this.ws.CLOSED) {
             this.ws.close();
         }
@@ -108,6 +111,7 @@ export class RagnaWebsocket {
      * @param {Event} e: The event from the original emitter.
      */
     private onError = (e: Event) => {
+
         // if there is an error and the readyState is at 3 that means the ws couldn't connect to the server.
         // @ts-ignore
         if (e.target && e.target.readyState === WebSocket.CLOSED) {
@@ -124,8 +128,8 @@ export class RagnaWebsocket {
      * @param {Message} msg - The message to be send.
      * @param {boolean} transient - if the message should be dropped and not queued.
      */
-    public sendMessage(msg: MessageCreate, transient: boolean = false) {
-        if (this.ws && this.ws.readyState !== this.ws.OPEN) {
+    public sendMessage(msg: MessageCMD, transient: boolean = false) {
+        if (!this.ws || this.ws.readyState !== this.ws.OPEN) {
             if (!this.reconnecting) {
                 this.reconnecting = true;
                 this.reconnect();
@@ -135,7 +139,7 @@ export class RagnaWebsocket {
             }
         } else {
             const toSend = JSON.stringify(msg);
-            this.ws!.send(toSend);
+            this.ws.send(toSend);
         }
     }
 
@@ -155,8 +159,9 @@ export class RagnaWebsocket {
 
 
     private onMessage = (ev: MessageEvent) => {
-        console.log("Socket message:", ev.data);
-        this.evtOnMessage(JSON.parse(ev.data));
+        const data: Message = JSON.parse(ev.data);
+        console.log("Socket message:", data);
+        this.evtOnMessage(data);
     };
 }
 
