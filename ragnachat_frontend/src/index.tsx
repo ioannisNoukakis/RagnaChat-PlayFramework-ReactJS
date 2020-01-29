@@ -13,7 +13,6 @@ import {theme} from "./theme";
 (async () => {
     const authResult = await checkAuth();
 
-    console.log("AH");
     store.dispatch(setAuthStatus(authResult));
     ReactDOM.render(
         <Provider store={store}>

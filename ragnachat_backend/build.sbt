@@ -18,7 +18,8 @@ libraryDependencies ++= Seq(
   guice,
   "org.mongodb.scala" %% "mongo-scala-driver" % "2.6.0",
   "com.pauldijou" %% "jwt-play-json" % "4.2.0",
-  "com.roundeights" %% "hasher" % "1.2.0"
+  "com.roundeights" %% "hasher" % "1.2.0",
+  "com.google.api-client" % "google-api-client" % "1.30.7"
 )
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )

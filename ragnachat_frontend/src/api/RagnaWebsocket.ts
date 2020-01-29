@@ -1,4 +1,4 @@
-import {Message, MessageCMD, MessageCreate} from "./model/Message";
+import {Message, MessageCMD} from "./model/Message";
 import {WS_ENDPOINT} from "./urls";
 
 const noop = () => {};
@@ -76,7 +76,7 @@ export class RagnaWebsocket {
         } catch (_) {
             this.reconnect();
         }
-        if (this.ws && this.ws.readyState === WebSocket.CLOSED || this.ws && this.ws.readyState === WebSocket.CLOSING) {
+        if ((this.ws && this.ws.readyState === WebSocket.CLOSED) || (this.ws && this.ws.readyState === WebSocket.CLOSING)) {
             this.reconnect();
         }
     }
