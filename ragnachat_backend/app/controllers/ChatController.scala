@@ -76,10 +76,11 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
   })
 
   def ws: WebSocket = WebSocket.acceptOrResult[JsValue, Message] { request =>
+    val a = request.cookies.get(Constants.JWT_COOKIE_NAME)
     UserAction
       .userFromJWTOrResult(request.cookies.get(Constants.JWT_COOKIE_NAME).map(_.value).getOrElse(""), config, userPersistence)
       .recover {
-        case _ => Right(User(UUID.randomUUID().toString, "anonymous", "-", new Date(), List("main", "System")))
+        case _ => Right(User(UUID.randomUUID().toString, "anonymous", new Date(), List("main", "System")))
       }
       .map(_.map(user => flowGraph(user)))
   }

@@ -4,6 +4,7 @@ import java.time.Clock
 
 import javax.inject.Inject
 import model.User
+import pdi.jwt.exceptions.JwtLengthException
 import pdi.jwt.{JwtAlgorithm, JwtJson}
 import play.api.Configuration
 import play.api.libs.json._
@@ -32,7 +33,7 @@ class UserAction @Inject()(override val parser: BodyParsers.Default, userPersist
 
 object UserAction {
   def userFromJWTOrResult[A](json: String, config: Configuration, userPersistenceService: UserPersistenceService)
-                            (implicit ec: ExecutionContext): Future[Either[Result, User]] = for {
+                            (implicit ec: ExecutionContext): Future[Either[Result, User]] = (for {
     decodedJwt <- Future {
       JwtJson.decodeJson(json, config.get[String]("jwt_secret"), Seq(JwtAlgorithm.HS512)).get
     }
@@ -40,7 +41,11 @@ object UserAction {
     result <- Future {
       matchingUsers
         .map(user => Right(user))
-        .getOrElse(Left(Results.Forbidden(Json.obj("cause" -> "Invalid auth."))))
+        .getOrElse(Left(Results.Forbidden(Json.obj("status" -> "KO", "message" -> "Invalid auth."))))
     }
-  } yield result
+  } yield result)
+    .recover{
+      case _: JwtLengthException => Left(Results.Forbidden(Json.obj("status" -> "KO", "message" -> "Auth is malformed.")))
+      case _ => Left(Results.Forbidden(Json.obj("status" -> "KO", "message" -> "Something went wrong. In doubt, cancelling your request.")))
+    }
 }

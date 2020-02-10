@@ -5,7 +5,6 @@ import {ChatBox} from "./ChatBox";
 
 const App: React.FC = () => {
   const id = useSelector(state => state.auth.id);
-  console.log("OUI", id);
   if (id === null) {
     return <LoginOrCreateForm/>
   }

@@ -1,4 +1,5 @@
 import {createStyles, Grid, Theme} from "@material-ui/core";
+import Avatar from "@material-ui/core/Avatar";
 import Paper from "@material-ui/core/Paper";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import TextField from "@material-ui/core/TextField";
@@ -11,6 +12,10 @@ import {useRagnaWebsocket} from "./useRagnaWebsocket";
 import loginBackground from "./loginBackground.svg"
 import Typography from "@material-ui/core/Typography";
 import moment from "moment";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Button from "@material-ui/core/Button";
+import Icon from "@material-ui/core/Icon";
+import {Send} from "@material-ui/icons";
 
 const speechBubbleBase = (theme: Theme) => ({
     border: "1px solid #a7a7a7",
@@ -22,6 +27,7 @@ const speechBubbleBase = (theme: Theme) => ({
     position: "relative" as any,
     display: "flex" as any,
     flexDirection: "column" as any,
+    backgroundColor: theme.palette.background.paper,
 });
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -38,20 +44,28 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         messageTyperContainer: {
             position: "absolute",
-            bottom: 0,
+            bottom: theme.spacing(1),
+            width: `calc(100% - ${theme.spacing(2)}px)`,
         },
         messageTyper: {
             margin: theme.spacing(1),
-            width: `calc(100vw - ${theme.spacing(4)}px)`,
+            width: "100%",
         },
         speechBubbleLeft: {
             ...speechBubbleBase(theme),
-            background: theme.palette.secondary.light,
         },
         speechBubbleRight: {
             ...speechBubbleBase(theme),
             alignSelf: "flex-end",
-            background: theme.palette.secondary.dark,
+        },
+        avatar: {
+            marginRight: theme.spacing(1),
+        },
+        avatarContainer: {
+            marginBottom: theme.spacing(1),
+        },
+        button: {
+            margin: `${theme.spacing(1)}px ${theme.spacing(1)}px ${theme.spacing(1)}px 0px`,
         },
     }),
 );
@@ -59,51 +73,82 @@ const useStyles = makeStyles((theme: Theme) =>
 export const ChatBox: React.FC = () => {
     const classes = useStyles();
     const [typedMessage, setTypedMessage] = useState("");
+    const [initialLoading, setInitialLoading] = useState(true);
 
     const id = useSelector(state => state.auth.id);
     const messages = useSelector(state => state.message.messages);
     const dispatch = useDispatch();
 
     const [sendMessage] = useRagnaWebsocket((msg) => {
-        dispatch(addMessage(msg))
+        if (initialLoading) {
+            setInitialLoading(false);
+        }
+        if (msg.id !== "RDY") {
+            dispatch(addMessage(msg))
+        }
     });
 
     const handleOnEnterPressed = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key !== "Enter") {
             return;
         }
+        handleOnClick();
+    };
+
+    const handleOnClick = () => {
         sendMessage({cmd: "CREATE_MSG", channel: "main", content: typedMessage});
         setTypedMessage("")
     };
 
     return (
         <>
+            {!initialLoading &&
             <Grid container direction="column" className={classes.container} justify="space-between">
                 <Grid container direction="column" className={classes.chatContainer} wrap="nowrap">
                     {[...messages].reverse().map(msg => <div
                         key={msg.id}
                         className={id === msg.from.id ? classes.speechBubbleRight : classes.speechBubbleLeft}
                     >
-                        <Typography variant="body1">{msg.from.username}</Typography>
-                        <Typography variant="body2">{msg.content}</Typography>
-                        <Typography variant="caption" style={{alignSelf: "flex-end"}}>
-                            {moment(msg.date).fromNow()}
-                        </Typography>
+                        <Grid container direction="column">
+                            <Grid container direction="row" alignItems="center" className={classes.avatarContainer}>
+                                {msg.from.pictureUrl &&
+                                <Avatar className={classes.avatar} src={msg.from.pictureUrl}/>}
+                                <Typography variant="body1">{msg.from.name}</Typography>
+                            </Grid>
+                            <Typography variant="body2">{msg.content}</Typography>
+                            <Typography variant="caption" style={{alignSelf: "flex-end"}}>
+                                {moment(msg.date).fromNow()}
+                            </Typography>
+                        </Grid>
                     </div>)}
                 </Grid>
                 <Paper className={classes.messageTyperContainer}>
-                    <TextField
-                        id="login-username-required"
-                        label="Send text"
-                        margin="none"
-                        variant="outlined"
-                        value={typedMessage}
-                        onChange={(e) => setTypedMessage(e.target.value)}
-                        onKeyPress={handleOnEnterPressed}
-                        className={classes.messageTyper}
-                    />
+                    <Grid container wrap="nowrap">
+                        <TextField
+                            id="login-username-required"
+                            label="Send text"
+                            margin="none"
+                            variant="outlined"
+                            value={typedMessage}
+                            onChange={(e) => setTypedMessage(e.target.value)}
+                            onKeyPress={handleOnEnterPressed}
+                            className={classes.messageTyper}
+                        />
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            className={classes.button}
+                            onClick={handleOnClick}
+                            disabled={typedMessage === ""}
+                        >
+                            <Send/>
+                        </Button>
+                    </Grid>
                 </Paper>
-            </Grid>
+            </Grid>}
+            {initialLoading && <Grid container alignItems="center" justify="center" className={classes.container}>
+                <CircularProgress size={250}/>
+            </Grid>}
         </>
     )
 };

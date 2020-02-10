@@ -5,9 +5,8 @@
 
 
 GET         /                    controllers.HomeController.index
-POST        /user                controllers.UserController.addUser
-GET         /user/:id            controllers.UserController.findUser(id)
 POST        /auth                controllers.UserController.auth
+GET         /user/:id            controllers.UserController.findUser(id)
 GET         /check               controllers.UserController.check
 GET         /ws                  controllers.ChatController.ws
 

@@ -12,8 +12,8 @@ export const useRagnaWebsocket = (messageHandler: (msg: Message) => void) => {
     useEffect(() => {
         // @ts-ignore
         ragnachatWebSocket.current = new RagnaWebsocket(5000, messageHandler);
-        ragnachatWebSocket.current!.sendMessage({cmd: "LAST_X_MSG", nMessages: 50})
-        // return RagnaWebsocket.current ? RagnaWebsocket.current.close() : () => {}
+        ragnachatWebSocket.current!.sendMessage({cmd: "LAST_X_MSG", nMessages: 50});
+        // return ragnachatWebSocket.current ? ragnachatWebSocket.current.close() : () => {}
     }, []);
 
     return [sendMessage];
