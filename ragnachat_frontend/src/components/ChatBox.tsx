@@ -4,7 +4,7 @@ import Paper from "@material-ui/core/Paper";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import TextField from "@material-ui/core/TextField";
 import * as React from "react";
-import {useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useDispatch} from "react-redux";
 import {addMessage} from "../redux/messageReducer";
 import {useSelector} from "../redux/store";
@@ -79,6 +79,8 @@ export const ChatBox: React.FC = () => {
     const messages = useSelector(state => state.message.messages);
     const dispatch = useDispatch();
 
+    const containerDiv = useRef<HTMLDivElement>(null);
+
     const [sendMessage] = useRagnaWebsocket((msg) => {
         if (initialLoading) {
             setInitialLoading(false);
@@ -87,6 +89,12 @@ export const ChatBox: React.FC = () => {
             dispatch(addMessage(msg))
         }
     });
+
+    useEffect(() => {
+        if (containerDiv.current) {
+            containerDiv.current.scrollTop = containerDiv.current.scrollHeight;
+        }
+    }, [messages]);
 
     const handleOnEnterPressed = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key !== "Enter") {
@@ -104,7 +112,7 @@ export const ChatBox: React.FC = () => {
         <>
             {!initialLoading &&
             <Grid container direction="column" className={classes.container} justify="space-between">
-                <Grid container direction="column" className={classes.chatContainer} wrap="nowrap">
+                <Grid container direction="column" className={classes.chatContainer} wrap="nowrap" ref={containerDiv}>
                     {[...messages].reverse().map(msg => <div
                         key={msg.id}
                         className={id === msg.from.id ? classes.speechBubbleRight : classes.speechBubbleLeft}

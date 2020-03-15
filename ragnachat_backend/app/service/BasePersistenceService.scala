@@ -6,7 +6,7 @@ import javax.inject.Singleton
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Aggregates._
-import org.mongodb.scala.{Completed, MongoCollection}
+import org.mongodb.scala.{Completed, MongoCollection, SingleObservable}
 import service.mongodb.MongoDB
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,6 +38,8 @@ abstract class BasePersistenceService[T: ClassTag](mongoDB: MongoDB, tableName: 
 
   def watch(aggregatePipeline: Seq[Bson]): Source[T, NotUsed] = Source.fromPublisher(MongoDB.observableToPublisher(collection.watch(aggregatePipeline)))
     .map(_.getFullDocument)
+
+  def initializeIndexes: SingleObservable[String]
 
   protected def _find(filter: Option[Bson] = None, skip: Option[Int] = None, limit: Option[Int] = None)(implicit ec: ExecutionContext): Future[Seq[T]] = {
     filter

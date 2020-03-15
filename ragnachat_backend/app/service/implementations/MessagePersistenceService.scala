@@ -1,12 +1,15 @@
-package service
+package service.implementations
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import javax.inject.Inject
 import model.Message
+import org.mongodb.scala.SingleObservable
 import org.mongodb.scala.bson._
 import org.mongodb.scala.model.Aggregates._
+import org.mongodb.scala.model.IndexOptions
 import org.mongodb.scala.model.Sorts._
+import service.BasePersistenceService
 import service.mongodb.MongoDB
 
 
@@ -21,4 +24,6 @@ class MessagePersistenceService @Inject()(mongoDB: MongoDB) extends BasePersiste
     sort(orderBy(descending("date")))
   ), skip, limit)
     .flatMapConcat(elements => Source(elements.reverse.toList))
+
+  override def initializeIndexes: SingleObservable[String] = collection.createIndex(ascending("id", "channel"), IndexOptions().background(false).unique(true))
 }

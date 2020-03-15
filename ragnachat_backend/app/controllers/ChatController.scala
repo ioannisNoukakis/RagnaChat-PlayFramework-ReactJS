@@ -13,7 +13,7 @@ import play.api.Configuration
 import play.api.libs.json._
 import play.api.mvc.WebSocket.MessageFlowTransformer
 import play.api.mvc.{AbstractController, ControllerComponents, WebSocket}
-import service.{MessagePersistenceService, UserPersistenceService}
+import service.implementations.{MessagePersistenceService, UserPersistenceService}
 import utils.Constants
 
 import scala.concurrent.ExecutionContext
@@ -48,7 +48,12 @@ class ChatController @Inject()(cc: ControllerComponents, config: Configuration, 
     val messageCreate = Flow[MessageCMD]
       .filter(_.cmd == MessageCommand.CREATE_MSG)
       .map(_.asInstanceOf[MessageCreate])
-      .map(mCreate => Message(UUID.randomUUID().toString, mCreate.channel, user.toUserToken, mCreate.content, new Date()))
+      .map(mCreate => Message(
+        UUID.randomUUID().toString,
+        mCreate.channel,
+        user.toUserToken,
+        if (mCreate.content.length > Constants.MESSAGE_MAX_LENGTH) mCreate.content.substring(0, Constants.MESSAGE_MAX_LENGTH) else mCreate.content,
+        new Date()))
       .mapAsync[Message](5)(msg => messagePersistenceService.add(msg).map(_ => msg))
 
     val getLast50Messages = Flow[MessageCMD]

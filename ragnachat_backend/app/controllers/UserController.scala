@@ -14,7 +14,7 @@ import pdi.jwt.{JwtAlgorithm, JwtJson}
 import play.api.Configuration
 import play.api.libs.json.{JsError, JsObject, JsValue, Json}
 import play.api.mvc._
-import service.UserPersistenceService
+import service.implementations.UserPersistenceService
 import utils.Constants
 
 import scala.collection.JavaConverters._
