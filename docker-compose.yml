@@ -1,0 +1,49 @@
+version: '3.7'
+
+services:
+  backend:
+    image: ioannisnoukakis9390/ragnachatserver:latest
+    environment:
+      CORS_ALLOWED_HOSTS.1: ${CORS_ALLOWED_HOST}
+      APP_VERSION: ${APP_VERSION}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      JWT_SECRET: ${JWT_SECRET}
+      MONGODB_URL: ${MONGODB_URL}
+    ports:
+    - 9000:9000
+  mongo1:
+    hostname: mongo1
+    container_name: mongo1
+    image: mongo:4.0.4
+    networks:
+      - mongo-dev-net
+    expose:
+      - 27017
+    ports:
+      - 27018:27017
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "devrs" ]
+  mongo2:
+    hostname: mongo2
+    container_name: mongo2
+    image: mongo:4.0.4
+    networks:
+      - mongo-dev-net
+    expose:
+      - 27017
+    ports:
+      - 27019:27017
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "devrs" ]
+  mongo3:
+    hostname: mongo3
+    container_name: mongo3
+    image: mongo:4.0.4
+    networks:
+      - mongo-dev-net
+    expose:
+      - 27017
+    ports:
+      - 27020:27017
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "devrs" ]
+
+networks:
+  mongo-dev-net:

@@ -1,8 +1,13 @@
+enablePlugins(DockerPlugin)
+javaOptions in Universal ++= Seq(
+  "-Dpidfile.path=/dev/null"
+)
+
 name := "RagnaChatServer"
 
 version := "1.0"
 
-lazy val `qimchatserver` = (project in file(".")).enablePlugins(PlayScala)
+lazy val `ragnachatserver` = (project in file(".")).enablePlugins(PlayScala)
 
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
@@ -24,3 +29,9 @@ libraryDependencies ++= Seq(
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )
 
+version in Docker := "latest"
+maintainer in Docker := "Ioannis Noukakis"
+packageName in Docker := "ioannisnoukakis9390/ragnachatserver"
+daemonUserUid in Docker := None
+daemonUser in Docker := "daemon"
+dockerBaseImage := "openjdk:11"

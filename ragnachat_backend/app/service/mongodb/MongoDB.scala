@@ -2,7 +2,7 @@ package service.mongodb
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
 import model.{Message, User, UserToken}
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.bson.codecs.DEFAULT_CODEC_REGISTRY
@@ -10,13 +10,14 @@ import org.mongodb.scala.bson.codecs.Macros._
 import org.mongodb.scala.{MongoClient, MongoDatabase}
 import org.mongodb.{scala => mongoDB}
 import org.{reactivestreams => rxStreams}
+import play.api.Configuration
 
 import scala.language.implicitConversions
 
 
 @Singleton
-class MongoDB {
-  private val mongoClient = MongoClient("mongodb://localhost:27018")
+class MongoDB @Inject()(config: Configuration) {
+  private val mongoClient = MongoClient(config.get[String]("mongodb_url"))
   private val codecRegistry = fromRegistries(
     fromProviders(classOf[User]),
     fromProviders(classOf[UserToken]),
