@@ -31,7 +31,9 @@ unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/
 
 version in Docker := "latest"
 maintainer in Docker := "Ioannis Noukakis"
-packageName in Docker := "ioannisnoukakis9390/ragnachatserver"
+dockerUsername in Docker := Some("ioannisnoukakis9390")
+dockerRepository in Docker := Some("docker.io")
+packageName in Docker := "ragnachatserver"
 daemonUserUid in Docker := None
 daemonUser in Docker := "daemon"
 dockerBaseImage := "openjdk:11"
