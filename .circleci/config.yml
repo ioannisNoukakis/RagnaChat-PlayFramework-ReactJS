@@ -47,4 +47,4 @@ workflows:
             branches:
               only:
                 - master
-                - circleci-project-setup
+                - staging

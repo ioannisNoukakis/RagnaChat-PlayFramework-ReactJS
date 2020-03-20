@@ -4,12 +4,12 @@
 # ~~~~
 
 
-GET         /                    controllers.HomeController.index
 POST        /auth                controllers.UserController.auth
 GET         /user/:id            controllers.UserController.findUser(id)
 GET         /check               controllers.UserController.check
 GET         /ws                  controllers.ChatController.ws
 
-# Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)
++anyhost
+GET         /                    controllers.HomeController.index
+
 

@@ -1,12 +1,12 @@
 # General config.
 provider "aws" {
-  version = "~> 2.0"
-  region  = "eu-west-1"
+  version = "~> 2.8"
+  region = var.aws_region
 }
 
 # Global lock for terraform states transactions.
 resource "aws_dynamodb_table" "terraform_lock" {
-  name           = "RagnachatStates"
+  name           = "ragnachat-global-lock"
   hash_key       = "LockID"
   read_capacity  = 20
   write_capacity = 20
@@ -24,9 +24,9 @@ resource "aws_dynamodb_table" "terraform_lock" {
 # Configuration of terraform that will store its states into S3.
 terraform {
   backend "s3" {
-    bucket = "ragnachat-terraform"
-    key    = "ragnachat-terraform-states"
+    bucket = "ioannis-tfstates"
+    key    = "raganchat"
     region = "eu-west-1"
-    dynamodb_table = "RagnachatStates"
+    dynamodb_table = "ragnachat-global-lock"
   }
 }
