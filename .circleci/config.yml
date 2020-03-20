@@ -1,7 +1,11 @@
-version: 2
+version: 2.1
+
+orbs:
+  aws-s3: circleci/aws-s3@1.0.15
+
 jobs:
-  build:
-    working_directory: ~/samplescala
+  build_backend:
+    working_directory: ~/backend
     docker:
       - image: openjdk:8
     environment:
@@ -38,13 +42,67 @@ jobs:
             - "~/.ivy2/cache"
             - "~/.sbt"
             - "~/.m2"
+
+  build_frontend:
+    working_directory: ~/frontend
+    docker:
+      - image: circleci/node:10
+    steps:
+      - checkout # special step to check out source code to working directory
+
+      - run:
+          name: Install dependencies with YARN
+          command: |
+            cd ragnachat_frontend
+            yarn install
+
+      - run:
+          name: build
+          command: |
+            cd ragnachat_frontend
+            yarn build
+
+      - store_artifacts:
+          path: ragnachat_frontend/build
+
+  deploy_frontend:
+    working_directory: ~/frontend
+    docker: # Use the Docker executor for the deploy job
+      - image: circleci/python:stretch  # Specify the Docker image to use for the deploy job
+    steps:
+      - checkout
+      - aws-s3/sync:
+          from: ~/frontend/ragnachat_frontend/build
+          to: $FRONTEND_BUCKET
+          arguments: | # Optional arguments
+            --acl public-read \
+            --cache-control "max-age=86400"
+          overwrite: true # default is false
+
 workflows:
   version: 2
-  build-master:
+  build_backend:
     jobs:
-      - build:
+      - build_backend:
           filters:
             branches:
               only:
                 - master
                 - staging
+  build_frontend:
+    jobs:
+      - build_frontend:
+          filters:
+            branches:
+              only:
+                - master
+                - staging
+      - deploy_frontend:
+          requires:
+            - build_frontend
+          filters:
+            branches:
+              only:
+                - master
+                - staging
+

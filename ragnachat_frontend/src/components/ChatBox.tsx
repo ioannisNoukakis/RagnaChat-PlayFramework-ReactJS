@@ -14,7 +14,6 @@ import Typography from "@material-ui/core/Typography";
 import moment from "moment";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Button from "@material-ui/core/Button";
-import Icon from "@material-ui/core/Icon";
 import {Send} from "@material-ui/icons";
 
 const speechBubbleBase = (theme: Theme) => ({
