@@ -66,11 +66,16 @@ jobs:
           name: build
           command: |
             cd ragnachat_frontend
+            rm src/config.ts
+            touch src/config.ts
+            echo "export const BASE_HOST = \"${BASE_HOST}\";" >> src/config.ts
+            echo "export const BASE_WS_HOST = \"${BASE_WS_HOST}\";" >> src/config.ts
+            cat src/config.ts
             yarn build
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
             aws configure set region $AWS_REGION --profile default
-            aws s3 sync build/  $FRONTEND_BUCKET
+            aws s3 sync build/ $FRONTEND_BUCKET
 
 workflows:
   version: 2

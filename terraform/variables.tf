@@ -9,6 +9,7 @@ variable "az_count" {
 }
 
 variable "acm_certificate_arn" {}
+variable "acm_cloudfront_certificate_arn" {}
 
 variable "mongodb_url_secret_arn" {}
 variable "jwt_secret_secret_arn" {}
