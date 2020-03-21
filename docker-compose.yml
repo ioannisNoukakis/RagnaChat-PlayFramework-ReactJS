@@ -11,39 +11,6 @@ services:
       MONGODB_URL: ${MONGODB_URL}
     ports:
     - 9000:9000
-  mongo1:
-    hostname: mongo1
-    container_name: mongo1
-    image: mongo:4.0.4
-    networks:
-      - mongo-dev-net
-    expose:
-      - 27017
-    ports:
-      - 27018:27017
-    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "devrs" ]
-  mongo2:
-    hostname: mongo2
-    container_name: mongo2
-    image: mongo:4.0.4
-    networks:
-      - mongo-dev-net
-    expose:
-      - 27017
-    ports:
-      - 27019:27017
-    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "devrs" ]
-  mongo3:
-    hostname: mongo3
-    container_name: mongo3
-    image: mongo:4.0.4
-    networks:
-      - mongo-dev-net
-    expose:
-      - 27017
-    ports:
-      - 27020:27017
-    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "devrs" ]
 
 networks:
   mongo-dev-net:

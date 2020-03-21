@@ -1,8 +1,3 @@
-enablePlugins(DockerPlugin)
-javaOptions in Universal ++= Seq(
-  "-Dpidfile.path=/dev/null"
-)
-
 name := "RagnaChatServer"
 
 version := "1.0"
@@ -37,3 +32,11 @@ packageName in Docker := "ragnachatserver"
 daemonUserUid in Docker := None
 daemonUser in Docker := "daemon"
 dockerBaseImage := "openjdk:11"
+
+javaOptions in Universal ++= Seq(
+  // JVM memory tuning
+  "-J-Xmx1024m",
+  "-J-Xms512m",
+
+  "-Dpidfile.path=/dev/null"
+)

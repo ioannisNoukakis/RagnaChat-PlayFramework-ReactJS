@@ -13,8 +13,8 @@
     ],
     "environment": [
       {
-        "name": "CORS_ALLOWED_HOSTS.1",
-        "value": "staging.ragnachat.io"
+        "name": "CORS_ALLOWED_HOSTS.0",
+        "value": "https://staging.ragnachat.io"
       },
       {
         "name": "APP_VERSION",
