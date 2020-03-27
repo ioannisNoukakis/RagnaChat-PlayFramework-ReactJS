@@ -11,5 +11,5 @@ GET         /ws                  controllers.ChatController.ws
 
 +anyhost
 GET         /                    controllers.HomeController.index
-
+GET         /metrics             com.github.stijndehaes.playprometheusfilters.controllers.PrometheusController.getMetrics
 

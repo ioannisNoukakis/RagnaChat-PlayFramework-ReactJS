@@ -19,7 +19,8 @@ libraryDependencies ++= Seq(
   "org.mongodb.scala" %% "mongo-scala-driver" % "2.9.0",
   "com.pauldijou" %% "jwt-play-json" % "4.2.0",
   "com.roundeights" %% "hasher" % "1.2.0",
-  "com.google.api-client" % "google-api-client" % "1.30.7"
+  "com.google.api-client" % "google-api-client" % "1.30.7",
+  "com.github.stijndehaes" %% "play-prometheus-filters" % "0.5.0"
 )
 
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )
