@@ -43,6 +43,13 @@ jobs:
             - "~/.sbt"
             - "~/.m2"
 
+  deploy_backend:
+    docker:
+      - image: circleci/python:stretch
+    steps:
+      - run: sudo pip install awscli
+      - run: aws ecs update-service --cluster ragnachat-cluster --service ragnachat-backend-service --force-new-deployment --output text
+
   build_frontend:
     working_directory: ~/frontend
     docker:
@@ -82,6 +89,14 @@ workflows:
   build_backend:
     jobs:
       - build_backend:
+          filters:
+            branches:
+              only:
+                - master
+                - staging
+      - deploy_backend:
+          requires:
+            - build_backend
           filters:
             branches:
               only:

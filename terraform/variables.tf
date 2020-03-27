@@ -15,3 +15,5 @@ variable "mongodb_url_secret_arn" {}
 variable "jwt_secret_secret_arn" {}
 variable "google_client_id_secret_arn" {}
 variable "credentials_parameter_secret_arn" {}
+
+variable "gitlab_password" {}
